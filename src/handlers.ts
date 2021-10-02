@@ -284,7 +284,7 @@ export const handlers = [
       ctx.json({ count: filteredList.length, items: filteredList })
     );
   }),
-  rest.get('*', (req, res, ctx) => {
+  rest.get('*', (_req, res, ctx) => {
     return res(
       ctx.status(404),
       ctx.json({ error: { message: 'Invalid API route.' } })
