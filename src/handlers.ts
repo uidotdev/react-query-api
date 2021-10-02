@@ -1,9 +1,12 @@
 import { rest } from 'msw';
-import { issues, labels, users } from './db';
+import { issueComments, issues, labels, users } from './db';
 import { Issue, IssueComment } from './types';
 
+const makeUrl = (path: string) =>
+  `${typeof window === 'undefined' ? 'http://localhost:3000' : ''}${path}`;
+
 export const handlers = [
-  rest.get('/api/issues', (req, res, ctx) => {
+  rest.get(makeUrl('/api/issues'), (req, res, ctx) => {
     const query = req.url.searchParams;
     const page = Number(query.get('page')) || 1;
     const perPage = Number(query.get('limit')) || 10;
@@ -14,7 +17,7 @@ export const handlers = [
       | 'done'
       | 'cancelled'
       | null;
-    const labels = query.getAll('labels[]');
+    const labelQuery = query.getAll('labels[]');
     const order = query.get('order') || 'desc';
     const filteredIssues = issues.filter(issue => {
       if (statusFilter) {
@@ -23,10 +26,12 @@ export const handlers = [
         if (issue.status === 'done' || issue.status === 'cancelled')
           return false;
       }
-      if (labels.length > 0) {
+      if (labelQuery.length > 0) {
         if (
-          !labels.some(label => {
-            return issue.labels.find(l => l.name === label);
+          !labelQuery.some(label => {
+            const dbLabel = labels.find(l => l.name === label);
+            if (!dbLabel) return false;
+            return issue.labels.find(l => l === dbLabel.id);
           })
         ) {
           return false;
@@ -51,7 +56,7 @@ export const handlers = [
     );
     return res(ctx.status(200), ctx.json(pagedIssues));
   }),
-  rest.get('/api/issues/:number', (req, res, ctx) => {
+  rest.get(makeUrl('/api/issues/:number'), (req, res, ctx) => {
     const number = Number(req.params.number);
     const issue = issues.find(issue => issue.number === number);
     if (!issue) {
@@ -59,7 +64,7 @@ export const handlers = [
     }
     return res(ctx.status(200), ctx.json(issue));
   }),
-  rest.get('/api/issues/:number/comments', (req, res, ctx) => {
+  rest.get(makeUrl('/api/issues/:number/comments'), (req, res, ctx) => {
     const number = Number(req.params.number);
     const issue = issues.find(issue => issue.number === number);
     if (!issue) {
@@ -67,37 +72,42 @@ export const handlers = [
     }
     return res(ctx.status(200), ctx.json(issue.comments));
   }),
-  rest.post<string>('/api/issues/:number/comments', (req, res, ctx) => {
-    const number = Number(req.params.number);
-    const issue = issues.find(issue => issue.number === number);
-    if (!issue) {
-      return res(ctx.status(404), ctx.json({ message: 'Not found' }));
-    }
-    const body: { createdBy_id: string; comment: string } = JSON.parse(
-      req.body
-    );
-    const createdBy = users.find(user => user.id === body.createdBy_id);
-    if (!createdBy) {
-      return res(ctx.status(400), ctx.json({ message: 'Not found' }));
-    }
-    const comment: IssueComment = {
-      id: `c_${issue.id}_${issue.comments.length + 1}`,
-      issueId: issue.id,
-      createdDate: new Date(),
-      createdBy,
-      comment: body.comment,
-    };
+  rest.post<string>(
+    makeUrl('/api/issues/:number/comments'),
+    (req, res, ctx) => {
+      const number = Number(req.params.number);
+      const issue = issues.find(issue => issue.number === number);
+      if (!issue) {
+        return res(ctx.status(404), ctx.json({ message: 'Not found' }));
+      }
+      const body: { createdBy_id: string; comment: string } = JSON.parse(
+        req.body
+      );
+      const createdBy = users.find(user => user.id === body.createdBy_id);
+      if (!createdBy) {
+        return res(ctx.status(400), ctx.json({ message: 'Not found' }));
+      }
+      const comment: IssueComment = {
+        id: `c_${issue.id}_${issue.comments.length + 1}`,
+        issueId: issue.id,
+        createdDate: new Date(),
+        createdBy: createdBy.id,
+        comment: body.comment,
+      };
 
-    issue.comments.push(comment);
-    return res(ctx.status(201), ctx.json(comment));
-  }),
-  rest.put<string>('/api/issues/:number', (req, res, ctx) => {
+      issue.comments.push();
+      return res(ctx.status(201), ctx.json(comment));
+    }
+  ),
+  rest.put<string>(makeUrl('/api/issues/:number'), (req, res, ctx) => {
     const number = Number(req.params.number);
     const issue = issues.find(issue => issue.number === number);
     if (!issue) {
       return res(ctx.status(404), ctx.json({ message: 'Not found' }));
     }
-    const body = JSON.parse(req.body);
+    let body: Record<string, any> = {};
+    if (typeof req.body === 'string') body = JSON.parse(req.body);
+    if (typeof req.body === 'object') body = req.body;
 
     if (body.title) {
       issue.title = body.title;
@@ -114,42 +124,49 @@ export const handlers = [
       issue.dueDate = body.dueDate;
     }
     if (body.assignee) {
-      issue.assignee = users.find(user => user.id === body.assignee) || null;
+      issue.assignee =
+        users.find(user => user.id === body.assignee)?.id || null;
     }
 
     return res(ctx.status(200), ctx.json(issue));
   }),
-  rest.post<string>('/api/issues/:number/complete', (req, res, ctx) => {
-    const number = Number(req.params.number);
-    const issue = issues.find(issue => issue.number === number);
-    if (!issue) {
-      return res(ctx.status(404), ctx.json({ message: 'Not found' }));
+  rest.post<string>(
+    makeUrl('/api/issues/:number/complete'),
+    (req, res, ctx) => {
+      const number = Number(req.params.number);
+      const issue = issues.find(issue => issue.number === number);
+      if (!issue) {
+        return res(ctx.status(404), ctx.json({ message: 'Not found' }));
+      }
+
+      issue.createdDate = new Date();
+      issue.status = 'done';
+
+      return res(ctx.status(200), ctx.json(issue));
     }
-
-    issue.createdDate = new Date();
-    issue.status = 'done';
-
-    return res(ctx.status(200), ctx.json(issue));
-  }),
-  rest.post<string>('/api/issues', (req, res, ctx) => {
-    const body = JSON.parse(req.body);
+  ),
+  rest.post<string>(makeUrl('/api/issues'), (req, res, ctx) => {
+    let body: Record<string, any> = {};
+    if (typeof req.body === 'string') body = JSON.parse(req.body);
+    if (typeof req.body === 'object') body = req.body;
     const number = issues.length + 1;
+
+    const issueComment = {
+      issueId: `i_${number}`,
+      id: `c_${issueComments.length}`,
+      createdDate: new Date(),
+      createdBy: users[Math.floor(Math.random() * users.length)].id,
+      comment: body.comment,
+    };
+    issueComments.push(issueComment);
     const issue: Issue = {
       id: `i_${number}`,
       number,
       title: body.title,
       status: 'backlog',
-      comments: [
-        {
-          issueId: `i_${number}`,
-          id: `c_${number}_1`,
-          createdDate: new Date(),
-          createdBy: users[Math.floor(Math.random() * users.length)],
-          comment: body.comment,
-        },
-      ],
+      comments: [issueComment.id],
       createdDate: new Date(),
-      createdBy: users[Math.floor(Math.random() * users.length)],
+      createdBy: users[Math.floor(Math.random() * users.length)].id,
       dueDate: null,
       completedDate: null,
       assignee: null,
@@ -160,10 +177,10 @@ export const handlers = [
     return res(ctx.status(201), ctx.json(issue));
   }),
 
-  rest.get('/api/labels', (_req, res, ctx) => {
+  rest.get(makeUrl('/api/labels'), (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(labels));
   }),
-  rest.get('/api/labels/:labelId', (req, res, ctx) => {
+  rest.get(makeUrl('/api/labels/:labelId'), (req, res, ctx) => {
     const { labelId } = req.params;
 
     const label = labels.find(l => l.name === labelId);
@@ -172,44 +189,44 @@ export const handlers = [
     }
     return res(ctx.status(200), ctx.json(label));
   }),
-  rest.post('/api/labels', (req, res, ctx) => {
-    if (!req.body || typeof req.body !== 'string') {
-      return res(ctx.status(400), ctx.json({ message: 'No body' }));
-    }
-    const parsedBody = JSON.parse(req.body);
-    if (!parsedBody.name) {
+  rest.post(makeUrl('/api/labels'), (req, res, ctx) => {
+    let body: Record<string, any> = {};
+    if (typeof req.body === 'string') body = JSON.parse(req.body);
+    if (typeof req.body === 'object') body = req.body;
+
+    if (!body.name) {
       return res(ctx.status(400), ctx.json({ message: 'No name' }));
     }
     const label = {
       id: `l_${labels.length + 1}`,
-      name: parsedBody.name,
-      color: parsedBody.color || 'red',
+      name: body.name,
+      color: body.color || 'red',
     };
     labels.push(label);
     return res(ctx.status(200), ctx.json(label));
   }),
-  rest.put('/api/labels/:labelId', (req, res, ctx) => {
+  rest.put(makeUrl('/api/labels/:labelId'), (req, res, ctx) => {
     const { labelId } = req.params;
     const label = labels.find(l => l.name === labelId);
     if (!label) {
       return res(ctx.status(404), ctx.json({ message: 'Label not found' }));
     }
-    if (!req.body || typeof req.body !== 'string') {
-      return res(ctx.status(400), ctx.json({ message: 'No body' }));
-    }
-    const parsedBody = JSON.parse(req.body);
-    if (!parsedBody.name) {
+    let body: Record<string, any> = {};
+    if (typeof req.body === 'string') body = JSON.parse(req.body);
+    if (typeof req.body === 'object') body = req.body;
+
+    if (!body.name) {
       return res(ctx.status(400), ctx.json({ message: 'No name' }));
     }
-    if (parsedBody.name) {
-      label.name = parsedBody.name;
+    if (body.name) {
+      label.name = body.name;
     }
-    if (parsedBody.color) {
-      label.color = parsedBody.color;
+    if (body.color) {
+      label.color = body.color;
     }
     return res(ctx.status(200), ctx.json(label));
   }),
-  rest.delete('/api/labels/:labelId', (req, res, ctx) => {
+  rest.delete(makeUrl('/api/labels/:labelId'), (req, res, ctx) => {
     const { labelId } = req.params;
     const label = labels.find(l => l.name === labelId);
     if (!label) {
@@ -219,7 +236,58 @@ export const handlers = [
     return res(ctx.status(200), ctx.json(labels));
   }),
 
-  rest.get('/api/users', (_req, res, ctx) => {
+  rest.get(makeUrl('/api/users'), (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(users));
+  }),
+
+  rest.get(makeUrl('/api/search/issues'), (req, res, ctx) => {
+    const query = req.url.searchParams.get('q') || '';
+    if (!query) {
+      return res(
+        ctx.status(401),
+        ctx.json({ message: 'Search query is required' })
+      );
+    }
+    const filteredList = issues.filter(issue => issue.title.includes(query));
+    return res(
+      ctx.status(200),
+      ctx.json({ count: filteredList.length, items: filteredList })
+    );
+  }),
+  rest.get(makeUrl('/api/search/labels'), (req, res, ctx) => {
+    const query = req.url.searchParams.get('q') || '';
+    if (!query) {
+      return res(
+        ctx.status(401),
+        ctx.json({ message: 'Search query is required' })
+      );
+    }
+    const filteredList = labels.filter(label => label.name.includes(query));
+    return res(
+      ctx.status(200),
+      ctx.json({ count: filteredList.length, items: filteredList })
+    );
+  }),
+  rest.get(makeUrl('/api/search/comments'), (req, res, ctx) => {
+    const query = req.url.searchParams.get('q') || '';
+    if (!query) {
+      return res(
+        ctx.status(401),
+        ctx.json({ message: 'Search query is required' })
+      );
+    }
+    const filteredList = issueComments.filter(comment =>
+      comment.comment.includes(query)
+    );
+    return res(
+      ctx.status(200),
+      ctx.json({ count: filteredList.length, items: filteredList })
+    );
+  }),
+  rest.get('*', (req, res, ctx) => {
+    return res(
+      ctx.status(404),
+      ctx.json({ error: { message: 'Invalid API route.' } })
+    );
   }),
 ];

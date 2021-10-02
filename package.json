@@ -11,6 +11,7 @@
     "node": ">=10"
   },
   "scripts": {
+    "dev": "nodemon --exec node -r ts-eager/register server.ts",
     "start": "tsdx watch",
     "build": "tsdx build",
     "lint": "tsdx lint",
@@ -30,7 +31,7 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "name": "react-query-api",
+  "name": "@uidotdev/react-query-api",
   "author": "Alex Anderson",
   "module": "dist/react-query-api.esm.js",
   "size-limit": [
@@ -46,12 +47,15 @@
   "devDependencies": {
     "@size-limit/preset-small-lib": "^5.0.5",
     "husky": "^7.0.2",
+    "nodemon": "^2.0.13",
     "size-limit": "^5.0.5",
     "tsdx": "^0.14.1",
     "tslib": "^2.3.1",
     "typescript": "^4.4.3"
   },
   "dependencies": {
-    "msw": "^0.35.0"
+    "msw": "^0.35.0",
+    "node-fetch": "^3.0.0",
+    "ts-eager": "^2.0.2"
   }
 }
