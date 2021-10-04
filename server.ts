@@ -8,7 +8,9 @@ const port = Number(process.env.PORT) || 3000;
   const { default: fetch, Headers, Response } = await import('node-fetch');
   const mockServer = setupServer(...handlers);
 
-  mockServer.listen();
+  mockServer.listen({
+    onUnhandledRequest: 'bypass',
+  });
 
   const server = http.createServer(async (req, res) => {
     const body: string = await new Promise(res => {
@@ -26,14 +28,11 @@ const port = Number(process.env.PORT) || 3000;
       headers.append(header, req.headers[header].toString());
     }
     try {
-      const response = await Promise.race([
-        fetch(`http://localhost:3000${req.url}`, {
-          method: req.method,
-          body: req.method !== 'GET' ? body : undefined,
-          headers,
-        }),
-        new Promise((_, reject) => setTimeout(reject, 1500)),
-      ]);
+      const response = await fetch(`http://localhost:3000${req.url}`, {
+        method: req.method,
+        body: req.method !== 'GET' ? body : undefined,
+        headers,
+      });
       if (!(response instanceof Response)) {
         throw new Error('Response is not instance of Response');
       }
@@ -42,9 +41,13 @@ const port = Number(process.env.PORT) || 3000;
       res.statusCode = response.status;
       res.end(result);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       res.statusCode = 500;
-      res.end('Error making request');
+      if (err instanceof Error) {
+        res.end(err.message);
+      } else {
+        res.end(err.toString());
+      }
     }
   });
 

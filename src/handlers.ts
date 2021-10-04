@@ -1,12 +1,35 @@
-import { rest } from 'msw';
+import { DefaultRequestBody, RequestParams, rest, RestRequest } from 'msw';
 import { issueComments, issues, labels, users } from './db';
 import { Issue, IssueComment } from './types';
 
 const makeUrl = (path: string) =>
   `${typeof window === 'undefined' ? 'http://localhost:3000' : ''}${path}`;
 
+const handleErrorDelay = async (
+  req: RestRequest<DefaultRequestBody, RequestParams>
+) => {
+  if (req.headers.get('x-delay')) {
+    await new Promise(resolve =>
+      setTimeout(resolve, Math.random() * 500 + 500)
+    );
+  }
+  if (req.headers.get('x-error')) {
+    if (Math.random() > 0.5) {
+      throw new Error();
+    }
+  }
+};
+
 export const handlers = [
-  rest.get(makeUrl('/api/issues'), (req, res, ctx) => {
+  rest.get(makeUrl('/api/status'), async (_req, res, ctx) => {
+    return res(ctx.status(200), ctx.json({ status: 'ok' }));
+  }),
+  rest.get(makeUrl('/api/issues'), async (req, res, ctx) => {
+    try {
+      await handleErrorDelay(req);
+    } catch {
+      return res.networkError('Error in request');
+    }
     const query = req.url.searchParams;
     const page = Number(query.get('page')) || 1;
     const perPage = Number(query.get('limit')) || 10;
@@ -56,7 +79,12 @@ export const handlers = [
     );
     return res(ctx.status(200), ctx.json(pagedIssues));
   }),
-  rest.get(makeUrl('/api/issues/:number'), (req, res, ctx) => {
+  rest.get(makeUrl('/api/issues/:number'), async (req, res, ctx) => {
+    try {
+      await handleErrorDelay(req);
+    } catch {
+      return res.networkError('Error in request');
+    }
     const number = Number(req.params.number);
     const issue = issues.find(issue => issue.number === number);
     if (!issue) {
@@ -64,7 +92,12 @@ export const handlers = [
     }
     return res(ctx.status(200), ctx.json(issue));
   }),
-  rest.get(makeUrl('/api/issues/:number/comments'), (req, res, ctx) => {
+  rest.get(makeUrl('/api/issues/:number/comments'), async (req, res, ctx) => {
+    try {
+      await handleErrorDelay(req);
+    } catch {
+      return res.networkError('Error in request');
+    }
     const number = Number(req.params.number);
     const issue = issues.find(issue => issue.number === number);
     if (!issue) {
@@ -74,7 +107,12 @@ export const handlers = [
   }),
   rest.post<string>(
     makeUrl('/api/issues/:number/comments'),
-    (req, res, ctx) => {
+    async (req, res, ctx) => {
+      try {
+        await handleErrorDelay(req);
+      } catch {
+        return res.networkError('Error in request');
+      }
       const number = Number(req.params.number);
       const issue = issues.find(issue => issue.number === number);
       if (!issue) {
@@ -99,7 +137,12 @@ export const handlers = [
       return res(ctx.status(201), ctx.json(comment));
     }
   ),
-  rest.put<string>(makeUrl('/api/issues/:number'), (req, res, ctx) => {
+  rest.put<string>(makeUrl('/api/issues/:number'), async (req, res, ctx) => {
+    try {
+      await handleErrorDelay(req);
+    } catch {
+      return res.networkError('Error in request');
+    }
     const number = Number(req.params.number);
     const issue = issues.find(issue => issue.number === number);
     if (!issue) {
@@ -132,7 +175,12 @@ export const handlers = [
   }),
   rest.post<string>(
     makeUrl('/api/issues/:number/complete'),
-    (req, res, ctx) => {
+    async (req, res, ctx) => {
+      try {
+        await handleErrorDelay(req);
+      } catch {
+        return res.networkError('Error in request');
+      }
       const number = Number(req.params.number);
       const issue = issues.find(issue => issue.number === number);
       if (!issue) {
@@ -145,7 +193,12 @@ export const handlers = [
       return res(ctx.status(200), ctx.json(issue));
     }
   ),
-  rest.post<string>(makeUrl('/api/issues'), (req, res, ctx) => {
+  rest.post<string>(makeUrl('/api/issues'), async (req, res, ctx) => {
+    try {
+      await handleErrorDelay(req);
+    } catch {
+      return res.networkError('Error in request');
+    }
     let body: Record<string, any> = {};
     if (typeof req.body === 'string') body = JSON.parse(req.body);
     if (typeof req.body === 'object') body = req.body;
@@ -177,10 +230,20 @@ export const handlers = [
     return res(ctx.status(201), ctx.json(issue));
   }),
 
-  rest.get(makeUrl('/api/labels'), (_req, res, ctx) => {
+  rest.get(makeUrl('/api/labels'), async (req, res, ctx) => {
+    try {
+      await handleErrorDelay(req);
+    } catch {
+      return res.networkError('Error in request');
+    }
     return res(ctx.status(200), ctx.json(labels));
   }),
-  rest.get(makeUrl('/api/labels/:labelId'), (req, res, ctx) => {
+  rest.get(makeUrl('/api/labels/:labelId'), async (req, res, ctx) => {
+    try {
+      await handleErrorDelay(req);
+    } catch {
+      return res.networkError('Error in request');
+    }
     const { labelId } = req.params;
 
     const label = labels.find(l => l.name === labelId);
@@ -189,7 +252,12 @@ export const handlers = [
     }
     return res(ctx.status(200), ctx.json(label));
   }),
-  rest.post(makeUrl('/api/labels'), (req, res, ctx) => {
+  rest.post(makeUrl('/api/labels'), async (req, res, ctx) => {
+    try {
+      await handleErrorDelay(req);
+    } catch {
+      return res.networkError('Error in request');
+    }
     let body: Record<string, any> = {};
     if (typeof req.body === 'string') body = JSON.parse(req.body);
     if (typeof req.body === 'object') body = req.body;
@@ -205,7 +273,12 @@ export const handlers = [
     labels.push(label);
     return res(ctx.status(200), ctx.json(label));
   }),
-  rest.put(makeUrl('/api/labels/:labelId'), (req, res, ctx) => {
+  rest.put(makeUrl('/api/labels/:labelId'), async (req, res, ctx) => {
+    try {
+      await handleErrorDelay(req);
+    } catch {
+      return res.networkError('Error in request');
+    }
     const { labelId } = req.params;
     const label = labels.find(l => l.name === labelId);
     if (!label) {
@@ -226,7 +299,12 @@ export const handlers = [
     }
     return res(ctx.status(200), ctx.json(label));
   }),
-  rest.delete(makeUrl('/api/labels/:labelId'), (req, res, ctx) => {
+  rest.delete(makeUrl('/api/labels/:labelId'), async (req, res, ctx) => {
+    try {
+      await handleErrorDelay(req);
+    } catch {
+      return res.networkError('Error in request');
+    }
     const { labelId } = req.params;
     const label = labels.find(l => l.name === labelId);
     if (!label) {
@@ -236,11 +314,21 @@ export const handlers = [
     return res(ctx.status(200), ctx.json(labels));
   }),
 
-  rest.get(makeUrl('/api/users'), (_req, res, ctx) => {
+  rest.get(makeUrl('/api/users'), async (req, res, ctx) => {
+    try {
+      await handleErrorDelay(req);
+    } catch {
+      return res.networkError('Error in request');
+    }
     return res(ctx.status(200), ctx.json(users));
   }),
 
-  rest.get(makeUrl('/api/search/issues'), (req, res, ctx) => {
+  rest.get(makeUrl('/api/search/issues'), async (req, res, ctx) => {
+    try {
+      await handleErrorDelay(req);
+    } catch {
+      return res.networkError('Error in request');
+    }
     const query = req.url.searchParams.get('q') || '';
     if (!query) {
       return res(
@@ -254,7 +342,12 @@ export const handlers = [
       ctx.json({ count: filteredList.length, items: filteredList })
     );
   }),
-  rest.get(makeUrl('/api/search/labels'), (req, res, ctx) => {
+  rest.get(makeUrl('/api/search/labels'), async (req, res, ctx) => {
+    try {
+      await handleErrorDelay(req);
+    } catch {
+      return res.networkError('Error in request');
+    }
     const query = req.url.searchParams.get('q') || '';
     if (!query) {
       return res(
@@ -268,7 +361,12 @@ export const handlers = [
       ctx.json({ count: filteredList.length, items: filteredList })
     );
   }),
-  rest.get(makeUrl('/api/search/comments'), (req, res, ctx) => {
+  rest.get(makeUrl('/api/search/comments'), async (req, res, ctx) => {
+    try {
+      await handleErrorDelay(req);
+    } catch {
+      return res.networkError('Error in request');
+    }
     const query = req.url.searchParams.get('q') || '';
     if (!query) {
       return res(
@@ -282,12 +380,6 @@ export const handlers = [
     return res(
       ctx.status(200),
       ctx.json({ count: filteredList.length, items: filteredList })
-    );
-  }),
-  rest.get('*', (_req, res, ctx) => {
-    return res(
-      ctx.status(404),
-      ctx.json({ error: { message: 'Invalid API route.' } })
     );
   }),
 ];
