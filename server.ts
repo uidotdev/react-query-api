@@ -2,14 +2,14 @@ import { setupServer } from 'msw/node';
 import { handlers } from './src/handlers';
 import http from 'http';
 
-const port = Number(process.env.PORT) || 3000;
+const port = Number(process.env.PORT) || 8000;
 
 (async function runServer() {
   const { default: fetch, Headers, Response } = await import('node-fetch');
   const mockServer = setupServer(...handlers);
 
   mockServer.listen({
-    onUnhandledRequest: 'bypass',
+    onUnhandledRequest: 'warn',
   });
 
   const server = http.createServer(async (req, res) => {
@@ -27,8 +27,20 @@ const port = Number(process.env.PORT) || 3000;
     for (let header in req.headers) {
       headers.append(header, req.headers[header].toString());
     }
+    if (req.method === 'OPTIONS') {
+      res.writeHead(200, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': '*',
+      });
+      res.end('');
+      return;
+    }
     try {
-      const response = await fetch(`http://localhost:3000${req.url}`, {
+      res.setHeader('access-control-allow-origin', '*');
+      res.setHeader('access-control-allow-headers', '*');
+      const requestUrl = `http://localhost:8000${req.url}`;
+      const response = await fetch(requestUrl, {
         method: req.method,
         body: req.method !== 'GET' ? body : undefined,
         headers,

@@ -3,7 +3,7 @@ import { issueComments, issues, labels, users } from './db';
 import { Issue, IssueComment } from './types';
 
 const makeUrl = (path: string) =>
-  `${typeof window === 'undefined' ? 'http://localhost:3000' : ''}${path}`;
+  `${typeof window === 'undefined' ? 'http://localhost:8000' : ''}${path}`;
 
 const handleErrorDelay = async (
   req: RestRequest<DefaultRequestBody, RequestParams>
@@ -321,6 +321,20 @@ export const handlers = [
       return res.networkError('Error in request');
     }
     return res(ctx.status(200), ctx.json(users));
+  }),
+  rest.get(makeUrl('/api/users/:userId'), async (req, res, ctx) => {
+    try {
+      await handleErrorDelay(req);
+    } catch {
+      return res.networkError('Error in request');
+    }
+    const { userId } = req.params;
+
+    const user = users.find(l => l.id === userId);
+    if (!user) {
+      return res(ctx.status(404), ctx.json({ message: 'User not found' }));
+    }
+    return res(ctx.status(200), ctx.json(user));
   }),
 
   rest.get(makeUrl('/api/search/issues'), async (req, res, ctx) => {
