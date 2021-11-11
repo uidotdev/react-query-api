@@ -38,18 +38,49 @@ export let labels: Label[] = [
   { id: 'l_8', color: 'yellow', name: 'help-wanted' },
 ];
 
-const templateIssues = [
-  'Dependencies need to be updated',
-  'Poor performance on Windows devices',
-  'Poor performance on macOS devices',
-  'Poor performance on Android devices',
-  'Holding down the space bar causes the processor to heat up',
-  `Error: "Cannot read property 'length' of undefined"`,
-  'The app is crashing on iOS devices',
-  'How am I supposed to create new tasks?',
-  'Styling on the profile page looks weird.',
-  'Feature: Build out multiplayer connectivity',
-  'Feature: Build out a leaderboard',
+const part1 = [
+  'Dependencies',
+  'The App',
+  'Windows',
+  'macOS',
+  'Styling',
+  'Button',
+  'Target',
+  'Input',
+  'Field',
+  'JavaScript',
+  'React',
+];
+
+const part2 = [
+  'is having a problem',
+  'seems to struggle',
+  'throws an error',
+  'makes my computer run slow',
+  'causes the processor to heat up',
+  'looks weird',
+  "cannot read property 'length' of undefined",
+  'is not working',
+  'is not responding',
+  'is not working properly',
+  'is not working as expected',
+  'is crashing',
+  "won't run right",
+  "is actually working fine. I just wanted to let you know you're great",
+];
+const part3 = [
+  'when I rage click it',
+  'on Tuesdays',
+  'every time I wear my green shirt',
+  "when I'm on a plane",
+  "when I'm on a train",
+  "when I'm on a boat",
+  "when I'm on a bike",
+  'right now',
+  'all the time',
+  'on weekends',
+  "when I'm with Taylor Swift",
+  'whenever I try to demo it',
 ];
 
 const templateIssueComments = [
@@ -79,7 +110,7 @@ const allStatus: (
 
 export let issueComments: IssueComment[] = [];
 
-export const issues: Issue[] = Array.from({ length: 100 }, (_, i) => {
+export const issues: Issue[] = Array.from({ length: 1000 }, (_, i) => {
   const isCompleted = Math.random() > 0.9;
   const comments: IssueComment[] = Array.from(
     { length: Math.floor(Math.random() * 10) + 1 },
@@ -95,9 +126,13 @@ export const issues: Issue[] = Array.from({ length: 100 }, (_, i) => {
     })
   );
   issueComments = issueComments.concat(comments);
+  const title = `${part1[Math.floor(Math.random() * part1.length)]} ${
+    part2[Math.floor(Math.random() * part2.length)]
+  } ${part3[Math.floor(Math.random() * part3.length)]}`;
+
   return {
     id: `i_${i}`,
-    title: templateIssues[Math.floor(Math.random() * templateIssues.length)],
+    title,
     labels: [labels[Math.floor(Math.random() * labels.length)].id],
     comments: comments.map(c => c.id),
     number: i + 1,
