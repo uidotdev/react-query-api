@@ -28,7 +28,7 @@ export const handlers = [
     try {
       await handleErrorDelay(req);
     } catch {
-      return res.networkError('Error in request');
+      return res(ctx.status(500), ctx.json({ error: 'Error in request' }));
     }
     const query = req.url.searchParams;
     const page = Number(query.get('page')) || 1;
@@ -83,7 +83,7 @@ export const handlers = [
     try {
       await handleErrorDelay(req);
     } catch {
-      return res.networkError('Error in request');
+      return res(ctx.status(500), ctx.json({ error: 'Error in request' }));
     }
     const number = Number(req.params.number);
     const issue = issues.find(issue => issue.number === number);
@@ -96,7 +96,7 @@ export const handlers = [
     try {
       await handleErrorDelay(req);
     } catch {
-      return res.networkError('Error in request');
+      return res(ctx.status(500), ctx.json({ error: 'Error in request' }));
     }
     const number = Number(req.params.number);
     const issue = issues.find(issue => issue.number === number);
@@ -111,7 +111,7 @@ export const handlers = [
       try {
         await handleErrorDelay(req);
       } catch {
-        return res.networkError('Error in request');
+        return res(ctx.status(500), ctx.json({ error: 'Error in request' }));
       }
       const number = Number(req.params.number);
       const issue = issues.find(issue => issue.number === number);
@@ -141,7 +141,7 @@ export const handlers = [
     try {
       await handleErrorDelay(req);
     } catch {
-      return res.networkError('Error in request');
+      return res(ctx.status(500), ctx.json({ error: 'Error in request' }));
     }
     const number = Number(req.params.number);
     const issue = issues.find(issue => issue.number === number);
@@ -179,7 +179,7 @@ export const handlers = [
       try {
         await handleErrorDelay(req);
       } catch {
-        return res.networkError('Error in request');
+        return res(ctx.status(500), ctx.json({ error: 'Error in request' }));
       }
       const number = Number(req.params.number);
       const issue = issues.find(issue => issue.number === number);
@@ -197,7 +197,7 @@ export const handlers = [
     try {
       await handleErrorDelay(req);
     } catch {
-      return res.networkError('Error in request');
+      return res(ctx.status(500), ctx.json({ error: 'Error in request' }));
     }
     let body: Record<string, any> = {};
     if (typeof req.body === 'string') body = JSON.parse(req.body);
@@ -234,7 +234,7 @@ export const handlers = [
     try {
       await handleErrorDelay(req);
     } catch {
-      return res.networkError('Error in request');
+      return res(ctx.status(500), ctx.json({ error: 'Error in request' }));
     }
     return res(ctx.status(200), ctx.json(labels));
   }),
@@ -242,7 +242,7 @@ export const handlers = [
     try {
       await handleErrorDelay(req);
     } catch {
-      return res.networkError('Error in request');
+      return res(ctx.status(500), ctx.json({ error: 'Error in request' }));
     }
     const { labelId } = req.params;
 
@@ -256,7 +256,7 @@ export const handlers = [
     try {
       await handleErrorDelay(req);
     } catch {
-      return res.networkError('Error in request');
+      return res(ctx.status(500), ctx.json({ error: 'Error in request' }));
     }
     let body: Record<string, any> = {};
     if (typeof req.body === 'string') body = JSON.parse(req.body);
@@ -277,7 +277,7 @@ export const handlers = [
     try {
       await handleErrorDelay(req);
     } catch {
-      return res.networkError('Error in request');
+      return res(ctx.status(500), ctx.json({ error: 'Error in request' }));
     }
     const { labelId } = req.params;
     const label = labels.find(l => l.name === labelId);
@@ -303,7 +303,7 @@ export const handlers = [
     try {
       await handleErrorDelay(req);
     } catch {
-      return res.networkError('Error in request');
+      return res(ctx.status(500), ctx.json({ error: 'Error in request' }));
     }
     const { labelId } = req.params;
     const label = labels.find(l => l.name === labelId);
@@ -318,7 +318,7 @@ export const handlers = [
     try {
       await handleErrorDelay(req);
     } catch {
-      return res.networkError('Error in request');
+      return res(ctx.status(500), ctx.json({ error: 'Error in request' }));
     }
     return res(ctx.status(200), ctx.json(users));
   }),
@@ -326,7 +326,7 @@ export const handlers = [
     try {
       await handleErrorDelay(req);
     } catch {
-      return res.networkError('Error in request');
+      return res(ctx.status(500), ctx.json({ error: 'Error in request' }));
     }
     const { userId } = req.params;
 
@@ -341,7 +341,7 @@ export const handlers = [
     try {
       await handleErrorDelay(req);
     } catch {
-      return res.networkError('Error in request');
+      return res(ctx.status(500), ctx.json({ error: 'Error in request' }));
     }
     const query = req.url.searchParams.get('q') || '';
     if (!query) {
@@ -360,7 +360,7 @@ export const handlers = [
     try {
       await handleErrorDelay(req);
     } catch {
-      return res.networkError('Error in request');
+      return res(ctx.status(500), ctx.json({ error: 'Error in request' }));
     }
     const query = req.url.searchParams.get('q') || '';
     if (!query) {
@@ -379,7 +379,7 @@ export const handlers = [
     try {
       await handleErrorDelay(req);
     } catch {
-      return res.networkError('Error in request');
+      return res(ctx.status(500), ctx.json({ error: 'Error in request' }));
     }
     const query = req.url.searchParams.get('q') || '';
     if (!query) {
