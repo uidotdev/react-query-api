@@ -103,7 +103,15 @@ export const handlers = [
     if (!issue) {
       return res(ctx.status(404), ctx.json({ message: 'Not found' }));
     }
-    return res(ctx.status(200), ctx.json(issue.comments));
+
+    return res(
+      ctx.status(200),
+      ctx.json(
+        issue.comments.map(id =>
+          issueComments.find(comment => comment.id === id)
+        )
+      )
+    );
   }),
   rest.post<string>(
     makeUrl('/api/issues/:number/comments'),
