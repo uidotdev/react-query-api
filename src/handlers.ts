@@ -10,6 +10,10 @@ const handleErrorDelay = async (
 ) => {
   if (req.headers.get('x-delay')) {
     await new Promise(resolve =>
+      setTimeout(resolve, Number(req.headers.get('x-delay')) || 0)
+    );
+  } else {
+    await new Promise(resolve =>
       setTimeout(resolve, Math.random() * 500 + 500)
     );
   }

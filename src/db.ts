@@ -5,25 +5,25 @@ export let users: User[] = [
     id: 'u_1',
     name: 'Tyler',
     profilePictureUrl:
-      'https://pbs.twimg.com/profile_images/1428205319616798721/xmr7q976_400x400.jpg',
+      'https://res.cloudinary.com/uidotdev/image/twitter_name/tylermcginnis',
   },
   {
     id: 'u_2',
     name: 'Bono',
     profilePictureUrl:
-      'https://pbs.twimg.com/profile_images/1384860221110095873/f8s_E6a6_400x400.jpg',
+      'https://res.cloudinary.com/uidotdev/image/twitter_name/u2',
   },
   {
     id: 'u_3',
     name: 'Tanner',
     profilePictureUrl:
-      'https://pbs.twimg.com/profile_images/1164219021283094530/ACRln2kL_400x400.jpg',
+      'https://res.cloudinary.com/uidotdev/image/twitter_name/tannerlinsley',
   },
   {
     id: 'u_4',
     name: 'Alex',
     profilePictureUrl:
-      'https://pbs.twimg.com/profile_images/1403026826075779075/cHtraFgQ_400x400.jpg',
+      'https://res.cloudinary.com/uidotdev/image/twitter_name/ralex1993',
   },
 ];
 
@@ -35,7 +35,6 @@ export let labels: Label[] = [
   { id: 'l_5', color: 'lime', name: 'help wanted' },
   { id: 'l_6', color: 'white', name: 'wontfix' },
   { id: 'l_7', color: 'rebeccapurple', name: 'duplicate' },
-  { id: 'l_8', color: 'yellow', name: 'help-wanted' },
 ];
 
 const part1 = [
@@ -50,6 +49,8 @@ const part1 = [
   'Field',
   'JavaScript',
   'React',
+  'JQuery',
+  'My Cookies',
 ];
 
 const part2 = [
