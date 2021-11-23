@@ -117,7 +117,7 @@ export const issues: Issue[] = Array.from({ length: 1000 }, (_, i) => {
     { length: Math.floor(Math.random() * 10) + 1 },
     (_, j) => ({
       id: `c_${issueComments.length + j}`,
-      createdDate: new Date(Date.now() - Math.floor(Math.random() * 100000)),
+      createdDate: new Date(Date.now() - Math.floor(Math.random() * 10000000)),
       createdBy: users[Math.floor(Math.random() * users.length)].id,
       issueId: `i_${i}`,
       comment:
@@ -126,7 +126,9 @@ export const issues: Issue[] = Array.from({ length: 1000 }, (_, i) => {
         ],
     })
   );
-  issueComments = issueComments.concat(comments);
+  issueComments = issueComments
+    .concat(comments)
+    .sort((a, b) => a.createdDate.getTime() - b.createdDate.getTime());
   const title = `${part1[Math.floor(Math.random() * part1.length)]} ${
     part2[Math.floor(Math.random() * part2.length)]
   } ${part3[Math.floor(Math.random() * part3.length)]}`;
@@ -142,7 +144,7 @@ export const issues: Issue[] = Array.from({ length: 1000 }, (_, i) => {
       : allStatus.filter(f => f !== 'done')[
           Math.floor(Math.random() * allStatus.length)
         ],
-    createdDate: new Date(Date.now() - Math.floor(Math.random() * 10000000000)),
+    createdDate: new Date(Date.now() - Math.floor(Math.random() * 10000000)),
     createdBy: users[Math.floor(Math.random() * users.length)].id,
     assignee:
       Math.random() > 0.5
