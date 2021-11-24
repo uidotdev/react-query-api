@@ -28,13 +28,13 @@ export let users: User[] = [
 ];
 
 export let labels: Label[] = [
-  { id: 'l_1', color: 'red', name: 'bug' },
-  { id: 'l_2', color: 'blue', name: 'feature' },
-  { id: 'l_3', color: 'cyan', name: 'enhancement' },
-  { id: 'l_4', color: 'orange', name: 'question' },
-  { id: 'l_5', color: 'lime', name: 'help wanted' },
-  { id: 'l_6', color: 'white', name: 'wontfix' },
-  { id: 'l_7', color: 'rebeccapurple', name: 'duplicate' },
+  { id: 'bug', color: 'red', name: 'bug' },
+  { id: 'feature', color: 'blue', name: 'feature' },
+  { id: 'enhancement', color: 'cyan', name: 'enhancement' },
+  { id: 'question', color: 'orange', name: 'question' },
+  { id: 'help', color: 'lime', name: 'help wanted' },
+  { id: 'wontfix', color: 'white', name: 'wontfix' },
+  { id: 'duplicate', color: 'rebeccapurple', name: 'duplicate' },
 ];
 
 const part1 = [

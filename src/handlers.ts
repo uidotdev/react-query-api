@@ -171,9 +171,9 @@ export const handlers = [
       issue.status = body.status;
     }
     if (body.labels) {
-      issue.labels = body.labels.map((l: string) =>
-        labels.find(lbl => lbl.name === l)
-      );
+      issue.labels = body.labels
+        .map((l: string) => labels.find(lbl => lbl.id === l)?.id)
+        .filter(Boolean);
     }
     if (body.dueDate) {
       issue.dueDate = body.dueDate;
@@ -277,8 +277,14 @@ export const handlers = [
     if (!body.name) {
       return res(ctx.status(400), ctx.json({ message: 'No name' }));
     }
+    if (labels.find(l => l.name === body.name))
+      return res(
+        ctx.status(400),
+        ctx.json({ message: 'Label already exists' })
+      );
+
     const label = {
-      id: `l_${labels.length + 1}`,
+      id: body.name,
       name: body.name,
       color: body.color || 'red',
     };
