@@ -26,7 +26,6 @@ export interface Issue {
 
 export interface IssueComment {
   id: string;
-  issueId: string;
   comment: string;
   createdDate: Date;
   createdBy: string;

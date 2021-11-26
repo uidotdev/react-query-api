@@ -139,7 +139,6 @@ export const handlers = [
       }
       const comment: IssueComment = {
         id: `c_${issue.id}_${issue.comments.length + 1}`,
-        issueId: issue.id,
         createdDate: new Date(),
         createdBy: createdBy.id,
         comment: body.comment,
