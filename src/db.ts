@@ -114,7 +114,7 @@ export let issueComments: IssueComment[] = [];
 export const issues: Issue[] = Array.from({ length: 1000 }, (_, i) => {
   const isCompleted = Math.random() > 0.9;
   const comments: IssueComment[] = Array.from(
-    { length: Math.floor(Math.random() * 10) + 1 },
+    { length: Math.floor(Math.random() * 500) + 1 },
     (_, j) => ({
       id: `c_${issueComments.length + j}`,
       createdDate: new Date(Date.now() - Math.floor(Math.random() * 10000000)),
@@ -126,9 +126,15 @@ export const issues: Issue[] = Array.from({ length: 1000 }, (_, i) => {
         ],
     })
   );
-  issueComments = issueComments
-    .concat(comments)
-    .sort((a, b) => a.createdDate.getTime() - b.createdDate.getTime());
+  issueComments = issueComments.concat(comments).sort((a, b) => {
+    if (a.createdDate < b.createdDate) {
+      return -1;
+    }
+    if (a.createdDate > b.createdDate) {
+      return 1;
+    }
+    return 0;
+  });
   const title = `${part1[Math.floor(Math.random() * part1.length)]} ${
     part2[Math.floor(Math.random() * part2.length)]
   } ${part3[Math.floor(Math.random() * part3.length)]}`;
