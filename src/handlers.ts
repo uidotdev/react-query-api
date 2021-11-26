@@ -108,14 +108,31 @@ export const handlers = [
       return res(ctx.status(404), ctx.json({ message: 'Not found' }));
     }
 
-    return res(
-      ctx.status(200),
-      ctx.json(
-        issue.comments.map(id =>
-          issueComments.find(comment => comment.id === id)
-        )
-      )
+    const query = req.url.searchParams;
+    const page = Number(query.get('page')) || 1;
+    const perPage = Number(query.get('limit')) || 10;
+    const order = query.get('order') || 'desc';
+
+    const filteredComments = issue.comments
+      .map(id => issueComments.find(comment => comment.id === id))
+      .filter(Boolean) as IssueComment[];
+    const sortedIssues = filteredComments.sort((a, b) => {
+      if (order === 'asc') {
+        if (a.createdDate < b.createdDate) return -1;
+        if (a.createdDate > b.createdDate) return 1;
+        return 0;
+      } else {
+        if (a.createdDate < b.createdDate) return 1;
+        if (a.createdDate > b.createdDate) return -1;
+        return 0;
+      }
+    });
+    const pagedComments = sortedIssues.slice(
+      (page - 1) * perPage,
+      page * perPage
     );
+
+    return res(ctx.status(200), ctx.json(pagedComments));
   }),
   rest.post<string>(
     makeUrl('/api/issues/:number/comments'),

@@ -141,7 +141,9 @@ export const issues: Issue[] = Array.from({ length: 1000 }, (_, i) => {
     id: `i_${i}`,
     title,
     labels: [labels[Math.floor(Math.random() * labels.length)].id],
-    comments: issueComments.map(c => c.id),
+    comments: Array.from({ length: Math.round(Math.random() * 500) })
+      .map(() => `c_${Math.round(Math.random() * 500)}`)
+      .filter((a, i, arr) => arr.indexOf(a) === i),
     number: i + 1,
     status: isCompleted
       ? 'done'
